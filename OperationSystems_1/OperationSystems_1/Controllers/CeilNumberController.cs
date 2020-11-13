@@ -31,12 +31,11 @@ namespace OperationSystems_1.Controllers
             const int TIME_TO_WAKEUP = 4000;
             string answer = MathOperation(id);
 
-            Result res = new Result(answer);
+            Result res = new Result(answer, id.ToString());
 
             _taskqueue.Add(answer);
 
-            CheckQueue(TIME_TO_WAKEUP);
-
+            CheckQueue(TIME_TO_WAKEUP, answer);
 
             res._TimeEnd = DateTime.Now;
 
@@ -53,18 +52,24 @@ namespace OperationSystems_1.Controllers
             });
         }
 
-        private void CheckQueue(int ms)
+        private void CheckQueue(int ms, string ans)
         {
             Stopwatch thread = new Stopwatch();
             thread.Start();
-            while(true)
+            while (true)
             {
-                if (thread.ElapsedMilliseconds > ms * _taskqueue.Count) {
+                if(_taskqueue.Count == 1)
+                {
+                    Thread.Sleep(ms);
+                    _taskqueue.RemoveAt(0);
+                    return;
+                }
+                else {
+                    Thread.Sleep(Convert.ToInt32(ms * Math.Max(_taskqueue.Count , 1) + thread.ElapsedMilliseconds % ms));
                     _taskqueue.RemoveAt(0);
                     return;
                 }
             }
-           
         }
     }
 

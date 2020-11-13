@@ -1,26 +1,61 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
+import { fetchDailyData } from '../api';
+import { Result } from './Result'
+import { ModalWindow } from './ModalWindow'
 
 export class Home extends Component {
-  static displayName = Home.name;
+  state = {
+    items: [],
+    delay: 1600,
+    requestsCount:0,
+    limit:5,
+    statusG: false,
+    statusY: false,
+  };
+  
 
-  render () {
-    return (
-      <div>
-        <h1>Hello, world!</h1>
-        <p>Welcome to your new single-page application, built with:</p>
-        <ul>
-          <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
-          <li><a href='https://facebook.github.io/react/'>React</a> for client-side code</li>
-          <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
-        </ul>
-        <p>To help you get started, we have also set up:</p>
-        <ul>
-          <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
-          <li><strong>Development server integration</strong>. In development mode, the development server from <code>create-react-app</code> runs in the background automatically, so your client-side resources are dynamically built on demand and the page refreshes when you modify any file.</li>
-          <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and your <code>dotnet publish</code> configuration produces minified, efficiently bundled JavaScript files.</li>
-        </ul>
-        <p>The <code>ClientApp</code> subdirectory is a standard React application based on the <code>create-react-app</code> template. If you open a command prompt in that directory, you can run <code>npm</code> commands such as <code>npm test</code> or <code>npm install</code>.</p>
+    getRequests = async () =>{
+      this._button.disabled = true;
+      const timer = setInterval(async () =>{
+        this.setState({statusG: true})
+        setTimeout(()=>{
+          this.setState({statusG: false})
+        }, 1300)
+
+        const fetchData = await fetchDailyData();
+
+        this.setState({ items: [...this.state.items, fetchData], statusY: true});
+        this.setState({requestsCount:this.state.requestsCount++})
+        setTimeout(()=>{
+          this.setState({statusY: false})
+        }, 1300)
+      }, this.state.delay)
+      
+      //офаем запросы
+      setTimeout(()=>{
+        clearInterval(timer)
+        this.setState({ statusG:false, statusY: false});
+      }, this.state.limit * this.state.delay)
+    }
+    render(){
+      return(
+      <div className='wrapper'>
+      <h1>Асинхронные задачи (TaskQueue)</h1>
+      <div className='content'>
+        <h3>Задача:</h3>
+        <p>Изучение особенностей работы многопоточных приложений</p>
+        <h3>Реализация:</h3>
+        <p>По нажатию на кнопку на сервер полетят 5 последовательных запросов с переодичностью в 1.6 сек. 
+          В теле запроса - случайное дробное число от 0 до 1.</p>
+        <input ref={(a)=> this._button = a} type="button" value='Поехали' onClick={() => this.getRequests()}/>
       </div>
-    );
-  }
+      <div className='results'>
+        <Result results = {this.state.items}/>  
+      </div> 
+        <ModalWindow statusG={this.state.statusG} statusY={this.state.statusY}/>
+      </div>
+      )
+    }
+    
+  
 }
