@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace OperationSystems_1
 {
@@ -20,7 +21,7 @@ namespace OperationSystems_1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddSingleton(typeof(TaskQueue));
             services.AddControllersWithViews();
 
             // In production, the React files will be served from this directory
