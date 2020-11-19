@@ -13,6 +13,7 @@ namespace OperationSystems_1
     {
         public Startup(IConfiguration configuration)
         {
+            Log.StartProgram();
             Configuration = configuration;
         }
 
@@ -67,6 +68,8 @@ namespace OperationSystems_1
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+
+            
         }
     }
 }

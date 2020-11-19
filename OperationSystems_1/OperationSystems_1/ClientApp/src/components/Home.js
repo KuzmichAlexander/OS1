@@ -23,7 +23,7 @@ export class Home extends Component {
         }, 1300)
 
         const fetchData = await fetchDailyData();
-
+        
         this.setState({ items: [...this.state.items, fetchData], statusY: true});
         this.setState({requestsCount:this.state.requestsCount++})
         setTimeout(()=>{
