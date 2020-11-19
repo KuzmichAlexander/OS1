@@ -17,18 +17,13 @@ export class Home extends Component {
     getRequests = async () =>{
       this._button.disabled = true;
       const timer = setInterval(async () =>{
-        this.setState({statusG: true})
-        setTimeout(()=>{
-          this.setState({statusG: false})
-        }, 1300)
+       
 
         const fetchData = await fetchDailyData();
         
         this.setState({ items: [...this.state.items, fetchData], statusY: true});
         this.setState({requestsCount:this.state.requestsCount++})
-        setTimeout(()=>{
-          this.setState({statusY: false})
-        }, 1300)
+    
       }, this.state.delay)
       
       //офаем запросы

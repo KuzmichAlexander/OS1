@@ -28,13 +28,12 @@ namespace OperationSystems_1.Controllers
         [HttpGet("{id}", Name = "Get")]
         public Result Get(decimal id)
         {
-            
             const int TIME_TO_WAKEUP = 4000;
             string answer = MathOperation(id);
 
-            _taskqueue.Add(id);
-
             Result res = new Result(answer, id.ToString());
+
+            _taskqueue.Add(id);
 
             if (id == _taskqueue.CurrentTask)
             {
@@ -66,6 +65,10 @@ namespace OperationSystems_1.Controllers
             {
                 if (_taskqueue.Count == 1 || _taskqueue.CurrentTask == ans || _taskqueue[0] == ans)
                 {
+                    if(_taskqueue[0] == ans)
+                    {
+                        _taskqueue.CurrentTime = Convert.ToInt32(thread.ElapsedMilliseconds);
+                    }
                     _taskqueue.CurrentTask = ans;
                     Thread.Sleep(ms);
                     _taskqueue.RemoveAt(0);
