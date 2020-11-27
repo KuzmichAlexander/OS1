@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace OperationSystems_1.Controllers
@@ -14,17 +9,13 @@ namespace OperationSystems_1.Controllers
     [ApiController]
     public class CeilNumberController : ControllerBase
     {
-        public TaskQueue _taskqueue;
-        public decimal current;
-        static Stopwatch st = new Stopwatch();
-        
-
+        TaskQueue _taskqueue;
         public CeilNumberController(TaskQueue taskqueue)
         {
             this._taskqueue = taskqueue;
         }
 
-        // GET: api/CeilNumber/5
+        // GET: api/CeilNumber/
         [HttpGet("{id}", Name = "Get")]
         public Result Get(decimal id)
         {
@@ -33,56 +24,42 @@ namespace OperationSystems_1.Controllers
 
             Result res = new Result(answer, id.ToString());
 
-            _taskqueue.Add(id);
-
-            if (id == _taskqueue.CurrentTask)
+            if (_taskqueue.Count == 0)
             {
-                Thread.Sleep(_taskqueue.CurrentTime);
+                _taskqueue.Add(id, DateTime.Now.AddMilliseconds(TIME_TO_WAKEUP));
+
+                Thread.Sleep((_taskqueue[id] - DateTime.Now));
+
+                res._TimeEnd = DateTime.Now;
+                Log.Report(res);
+                _taskqueue.Remove(id);
+                return res;
+            }
+            else if (_taskqueue.ContainsKey(id))
+            {
+                Thread.Sleep(_taskqueue[id] - DateTime.Now);
+
                 res._TimeEnd = DateTime.Now;
                 Log.SimularStack(res);
                 return res;
             }
-
-            CheckQueue(TIME_TO_WAKEUP, id);
-
-            res._TimeEnd = DateTime.Now;
-
-            Log.Report(res);
-
-            return res;
-        }
-
-        private string MathOperation(decimal num) {
-            return Math.Ceiling(num).ToString();
-        }
-
-
-        private void CheckQueue(int ms, decimal ans)
-        {
-            Stopwatch thread = new Stopwatch();
-            thread.Start();
-            while (true)
+            else
             {
-                if (_taskqueue.Count == 1 || _taskqueue.CurrentTask == ans || _taskqueue[0] == ans)
-                {
-                    if(_taskqueue[0] == ans)
-                    {
-                        _taskqueue.CurrentTime = Convert.ToInt32(thread.ElapsedMilliseconds);
-                    }
-                    _taskqueue.CurrentTask = ans;
-                    Thread.Sleep(ms);
-                    _taskqueue.RemoveAt(0);
-                    return;
-                }
-                else
-                {
-                    Thread.Sleep(Convert.ToInt32(ms * Math.Max(_taskqueue.Count, 1) + thread.ElapsedMilliseconds % ms));
-                    _taskqueue.RemoveAt(0);
-                    return;
-                }
+                _taskqueue.Add(id, DateTime.Now.AddMilliseconds(TIME_TO_WAKEUP * _taskqueue.Count + _taskqueue.Last().Value.Millisecond));
+                Thread.Sleep(_taskqueue[id] - DateTime.Now);
+
+                _taskqueue.Remove(id);
+                res._TimeEnd = DateTime.Now;
+                Log.Report(res);
+                return res;
             }
+        }
+
+        private string MathOperation(decimal num)
+        {
+            return Math.Ceiling(num).ToString();
         }
     }
 
-   
+
 }

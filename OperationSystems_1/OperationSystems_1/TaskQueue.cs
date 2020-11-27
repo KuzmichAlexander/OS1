@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace OperationSystems_1
 {
-    public class TaskQueue : List<decimal>
+    public class TaskQueue : Dictionary<decimal, DateTime>
     {
-        public decimal CurrentTask { get; set; }
-        public int CurrentTime { get; set; }
+
     }
 }

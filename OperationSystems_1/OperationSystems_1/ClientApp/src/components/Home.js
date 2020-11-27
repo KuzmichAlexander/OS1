@@ -14,9 +14,9 @@ export class Home extends Component {
   };
   
 
-    getRequests = async () =>{
+    startSendRequests = async () =>{
       this._button.disabled = true;
-      const timer = setInterval(async () =>{
+      this.timer = setInterval(async () =>{
        
 
         const fetchData = await fetchDailyData();
@@ -25,12 +25,10 @@ export class Home extends Component {
         this.setState({requestsCount:this.state.requestsCount++})
     
       }, this.state.delay)
-      
-      //офаем запросы
-      setTimeout(()=>{
-        clearInterval(timer)
-        this.setState({ statusG:false, statusY: false});
-      }, this.state.limit * this.state.delay)
+    }
+
+    stopSendRequests = () => {
+        clearInterval(this.timer)
     }
     render(){
       return(
@@ -42,7 +40,9 @@ export class Home extends Component {
         <h3>Реализация:</h3>
         <p>По нажатию на кнопку на сервер полетят 5 последовательных запросов с переодичностью в 1.6 сек. 
           В теле запроса - случайное дробное число от 0 до 1.</p>
-        <input ref={(a)=> this._button = a} type="button" value='Поехали' onClick={() => this.getRequests()}/>
+        <input ref={(a)=> this._button = a} type="button" value='Поехали' onClick={() => this.startSendRequests()}/>
+        <input type="button" value='Остановка' onClick={() => this.stopSendRequests()}/>
+
       </div>
       <div className='results'>
         <Result results = {this.state.items}/>  
