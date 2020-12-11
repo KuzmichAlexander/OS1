@@ -7,9 +7,8 @@ namespace OperationSystems_1
 {
     public class Result
     {
-        public Result(string result, string startnum)
+        public Result(string startnum)
         {
-            this._result = result;
             this._TimeStart = DateTime.Now;
             this._StartNum = startnum;
         }
@@ -17,5 +16,10 @@ namespace OperationSystems_1
         public string _result { get; set; }
         public string _StartNum { get; set; }
         public DateTime _TimeEnd { get; set; }
+    }
+    public class InputParams
+    {
+        public float Num { get; set; }
+        public string CurHash { get; set; }
     }
 }

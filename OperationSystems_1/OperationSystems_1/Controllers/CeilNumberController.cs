@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FlowAnalysis;
 
 namespace OperationSystems_1.Controllers
 {
@@ -14,48 +16,81 @@ namespace OperationSystems_1.Controllers
         {
             this._taskqueue = taskqueue;
         }
+        [HttpPost]
+        public Result Post(InputParams ip)
+        {
+            Result res = new Result(ip.Num.ToString());
 
-        // GET: api/CeilNumber/
-        [HttpGet("{id}", Name = "Get")]
-        public Result Get(decimal id)
+            getDelay(ip);
+
+            string result = MathOperation(ip.Num);
+
+            res._TimeEnd = DateTime.Now;
+            res._result = result;
+
+            Log.Report(res, ip.CurHash);
+
+            return res;
+        }
+
+        void getDelay (InputParams ip)
         {
             const int TIME_TO_WAKEUP = 4000;
-            string answer = MathOperation(id);
 
-            Result res = new Result(answer, id.ToString());
-
-            if (_taskqueue.Count == 0)
+            if (_taskqueue.Count == 0) // Распечатываем очередь
             {
-                _taskqueue.Add(id, DateTime.Now.AddMilliseconds(TIME_TO_WAKEUP));
+                var stack = new InputParam(ip.Num, ip.CurHash); 
+                stack.TimeEnd = DateTime.Now.AddMilliseconds(TIME_TO_WAKEUP);
 
-                Thread.Sleep((_taskqueue[id] - DateTime.Now));
+                _taskqueue.Add(stack);
 
-                res._TimeEnd = DateTime.Now;
-                Log.Report(res);
-                _taskqueue.Remove(id);
-                return res;
+                Thread.Sleep(stack.TimeEnd - DateTime.Now);
+
+                _taskqueue.Remove(stack);
             }
-            else if (_taskqueue.ContainsKey(id))
+            //Есть ли такое значение в очереди
+            else if (_taskqueue.Any(item => item.Num == ip.Num))
             {
-                Thread.Sleep(_taskqueue[id] - DateTime.Now);
+                var stack = new InputParam(ip.Num, ip.CurHash);
+                var time = _taskqueue.First(item => item.Num == ip.Num).TimeEnd;
+                stack.TimeEnd = time;
 
-                res._TimeEnd = DateTime.Now;
-                Log.SimularStack(res);
-                return res;
+                Thread.Sleep(Math.Max((stack.TimeEnd - DateTime.Now).Milliseconds, 0));
+
+                Log.SimularValue(stack);
+            }
+            //есть ли ещё обработка из этого потока
+            else if (_taskqueue.Any(item => item.CurHash == ip.CurHash))
+            {
+                var stack = new InputParam(ip.Num, ip.CurHash);
+                
+                //Ищем последний элемент в очереди этого потока
+                var time = _taskqueue.Last((item) => item.CurHash == ip.CurHash).TimeEnd;
+                stack.TimeEnd = time.AddMilliseconds(TIME_TO_WAKEUP);
+
+                _taskqueue.Add(stack);
+
+                Thread.Sleep(stack.TimeEnd - DateTime.Now);
+
+                _taskqueue.Remove(stack);
             }
             else
             {
-                _taskqueue.Add(id, DateTime.Now.AddMilliseconds(TIME_TO_WAKEUP * _taskqueue.Count + _taskqueue.Last().Value.Millisecond));
-                Thread.Sleep(_taskqueue[id] - DateTime.Now);
+                var stack = new InputParam(ip.Num, ip.CurHash);
+                var time = DateTime.Now;
+                stack.TimeEnd = time.AddMilliseconds(TIME_TO_WAKEUP);
 
-                _taskqueue.Remove(id);
-                res._TimeEnd = DateTime.Now;
-                Log.Report(res);
-                return res;
+                _taskqueue.Add(stack);
+
+                Thread.Sleep(stack.TimeEnd - DateTime.Now);
+
+                _taskqueue.Remove(stack);
+
             }
         }
+        
 
-        private string MathOperation(decimal num)
+        private string MathOperation(float num)
         {
             return Math.Ceiling(num).ToString();
         }

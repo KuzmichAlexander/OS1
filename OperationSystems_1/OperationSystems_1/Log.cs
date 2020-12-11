@@ -22,15 +22,18 @@ namespace OperationSystems_1
                     sw.WriteLine(start);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-
+                using (StreamWriter sw = new StreamWriter(writePath, true))
+                {
+                    sw.WriteLine(ex);
+                }
             }
 
         }
-        static public void Report(Result res)
+        static public void Report(Result res, string hash)
         {
-            string report = $"На обработку пришло значение:{res._StartNum} /// Время: {res._TimeStart} \n Результат вычислений: {res._result} /// Время окончания вычисления: {res._TimeEnd}";
+            string report = $"Из потока {hash} на обработку пришло значение:{res._StartNum} /// Время: {res._TimeStart} \n Результат вычислений: {res._result} /// Время окончания вычисления: {res._TimeEnd}";
             try
             {
                 using (StreamWriter sw = new StreamWriter(writePath, true))
@@ -44,9 +47,9 @@ namespace OperationSystems_1
             
             }
         }
-        static public void SimularStack(Result res)
+        static public void SimularValue(InputParam res)
         {
-            string report = $"На обработку пришло значение:{res._StartNum} /// Время: {res._TimeStart} \nПодобное значение уже вычисляется \n Результат вычисления был отправлен пользователю без очереди в: {res._TimeEnd}";
+            string report = $"Из потока:{res.CurHash} пришло значение, которое уже вычисляется \n/// Время окончания вычисления: {res.TimeEnd} \nПодобное значение уже вычисляется \n Результат вычисления был отправлен пользователю без очереди";
             try
             {
                 using (StreamWriter sw = new StreamWriter(writePath, true))
